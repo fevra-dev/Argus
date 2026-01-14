@@ -1,0 +1,96 @@
+# Changelog
+
+All notable changes to Argus will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.2.0] - 2026-01-14
+
+### Added
+
+- **Intelligence Layer**
+  - Real-time CVE enrichment via NIST NVD API 2.0
+  - Exploit availability checking via CISA KEV catalog
+  - Composite risk scoring with actionable recommendations
+  - Version parser for banner analysis
+
+- **Protocol Plugins**
+  - SSH credential testing (Paramiko)
+  - HTTP/HTTPS Basic Auth testing
+  - FTP credential testing
+  - Telnet credential testing
+  - Redis authentication testing
+  - MongoDB authentication testing
+  - MySQL authentication testing
+  - SNMP community string testing
+
+- **Enterprise Features**
+  - REST API (FastAPI) with Swagger documentation
+  - Web dashboard with real-time statistics
+  - Multi-channel notifications (Slack, Discord, Teams, Email)
+  - SIEM integration (Splunk, ELK, Syslog/CEF)
+  - Scheduled automated scanning (APScheduler)
+  - Account lockout protection
+
+- **Reporting**
+  - Professional HTML reports with Chart.js
+  - JSON export format
+  - CSV export format
+  - Executive summary generation
+  - MITRE ATT&CK mapping
+
+- **CLI Enhancements**
+  - Rich terminal UI with progress bars
+  - Colored output with severity indicators
+  - CVE enrichment flags
+  - Multiple output format options
+
+- **Deployment**
+  - Docker containerization
+  - Docker Compose full-stack deployment
+  - Nginx reverse proxy configuration
+
+### Technical
+
+- Async scanning with asyncio/aiohttp
+- Concurrent credential testing
+- Modular plugin architecture
+- Comprehensive logging
+- Type hints throughout codebase
+
+## [0.1.0] - Initial Development
+
+### Added
+
+- Basic credential scanning functionality
+- SSH, HTTP, FTP, Telnet plugins
+- Default credential database
+- Console, JSON, CSV reporters
+- Network discovery module
+
+---
+
+## Roadmap
+
+### [0.3.0] - Planned
+
+- [ ] PostgreSQL plugin
+- [ ] LDAP/Active Directory plugin
+- [ ] SMB/CIFS plugin
+- [ ] Async credential testing improvements
+- [ ] Web dashboard enhancements
+- [ ] Plugin marketplace concept
+
+### [1.0.0] - Future
+
+- [ ] Stable API
+- [ ] Comprehensive documentation
+- [ ] PyPI publication
+- [ ] Docker Hub images
+- [ ] GitHub Actions CI/CD
+
+---
+
+[0.2.0]: https://github.com/fevra-dev/Argus/releases/tag/v0.2.0
+[0.1.0]: https://github.com/fevra-dev/Argus/releases/tag/v0.1.0

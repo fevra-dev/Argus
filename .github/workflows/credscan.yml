@@ -1,0 +1,168 @@
+# CredScan CI/CD Security Pipeline
+# Automated credential scanning for enterprise environments
+#
+# Features:
+# - Scheduled daily scans
+# - Pull request validation
+# - SIEM integration
+# - Slack/Teams notifications
+# - HTML report artifacts
+
+name: CredScan Security Scan
+
+on:
+  # Scheduled scans (daily at 2 AM UTC)
+  schedule:
+    - cron: '0 2 * * *'
+  
+  # Manual trigger with inputs
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: 'Scan targets (comma-separated IPs/CIDRs)'
+        required: true
+        type: string
+      ports:
+        description: 'Ports to scan'
+        required: false
+        default: '22,23,21,80,443,3306,27017,6379'
+        type: string
+      enrich_cves:
+        description: 'Enable CVE enrichment'
+        required: false
+        default: true
+        type: boolean
+      notify_slack:
+        description: 'Send Slack notification'
+        required: false
+        default: true
+        type: boolean
+
+  # On push to main (for infrastructure changes)
+  push:
+    branches: [main]
+    paths:
+      - 'infrastructure/**'
+      - 'terraform/**'
+      - 'ansible/**'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  scan:
+    name: Credential Security Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install CredScan
+        run: |
+          pip install --upgrade pip
+          pip install -e .
+          pip install -r requirements.txt
+
+      - name: Run CredScan
+        id: scan
+        env:
+          TARGETS: ${{ github.event.inputs.targets || secrets.SCAN_TARGETS }}
+          PORTS: ${{ github.event.inputs.ports || '22,23,21,80,443,3306,6379' }}
+          ENRICH_CVES: ${{ github.event.inputs.enrich_cves || 'true' }}
+        run: |
+          # Create output directory
+          mkdir -p reports
+          
+          # Run scan with intelligence enrichment
+          credscan scan "$TARGETS" \
+            --ports "$PORTS" \
+            $([[ "$ENRICH_CVES" == "true" ]] && echo "--enrich-cves --check-exploits") \
+            --output reports/scan-report.html \
+            --json reports/scan-results.json \
+            --threads 20 \
+            2>&1 | tee scan-output.log
+          
+          # Extract metrics for summary
+          FINDINGS=$(cat reports/scan-results.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('findings', [])))" 2>/dev/null || echo "0")
+          CRITICAL=$(cat reports/scan-results.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(sum(1 for f in d.get('findings', []) if f.get('severity')=='CRITICAL'))" 2>/dev/null || echo "0")
+          
+          echo "findings=$FINDINGS" >> $GITHUB_OUTPUT
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          
+          # Fail if critical findings
+          if [[ "$CRITICAL" -gt 0 ]]; then
+            echo "::error::$CRITICAL critical findings detected!"
+            exit 1
+          fi
+
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: credscan-report-${{ github.run_number }}
+          path: reports/
+          retention-days: 30
+
+      - name: Upload SARIF to GitHub Security
+        if: always() && hashFiles('reports/scan-results.sarif') != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: reports/scan-results.sarif
+
+      - name: Send Slack Notification
+        if: always() && (github.event.inputs.notify_slack == 'true' || github.event_name == 'schedule')
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,workflow
+          custom_payload: |
+            {
+              "attachments": [{
+                "color": "${{ steps.scan.outputs.critical > 0 && 'danger' || 'good' }}",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "🛡️ CredScan Security Report"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {"type": "mrkdwn", "text": "*Findings:* ${{ steps.scan.outputs.findings }}"},
+                      {"type": "mrkdwn", "text": "*Critical:* ${{ steps.scan.outputs.critical }}"},
+                      {"type": "mrkdwn", "text": "*Status:* ${{ job.status }}"},
+                      {"type": "mrkdwn", "text": "*Run:* #${{ github.run_number }}"}
+                    ]
+                  }
+                ]
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+
+  notify-teams:
+    name: Teams Notification
+    runs-on: ubuntu-latest
+    needs: scan
+    if: always() && github.event_name == 'schedule'
+    
+    steps:
+      - name: Send Teams Notification
+        uses: jdcargile/ms-teams-notification@v1.4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          ms-teams-webhook-uri: ${{ secrets.TEAMS_WEBHOOK }}
+          notification-summary: "CredScan completed - ${{ needs.scan.outputs.findings }} findings"
+          notification-color: ${{ needs.scan.result == 'success' && '00FF00' || 'FF0000' }}

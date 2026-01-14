@@ -1,0 +1,97 @@
+# Argus 2.0 Docker Compose
+# Full-stack deployment with monitoring and database
+
+version: '3.8'
+
+services:
+  # Argus API Server
+  argus-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: argus:2.0
+    container_name: argus-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ARGUS_API_HOST=0.0.0.0
+      - ARGUS_API_PORT=8000
+      - ARGUS_LOG_LEVEL=INFO
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://argus:argus@postgres:5432/argus
+    volumes:
+      - ./reports:/app/reports
+      - ./data:/app/data
+      - ./credentials.json:/app/credentials.json:ro
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - argus-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching and job queue
+  redis:
+    image: redis:7-alpine
+    container_name: argus-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - argus-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # PostgreSQL for scan results persistence
+  postgres:
+    image: postgres:15-alpine
+    container_name: argus-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=argus
+      - POSTGRES_PASSWORD=argus
+      - POSTGRES_DB=argus
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - argus-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U argus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Web Dashboard (served via nginx)
+  dashboard:
+    image: nginx:alpine
+    container_name: argus-dashboard
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./argus/web/dashboard.html:/usr/share/nginx/html/index.html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - argus-api
+    networks:
+      - argus-network
+
+volumes:
+  redis_data:
+  postgres_data:
+
+networks:
+  argus-network:
+    driver: bridge

@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Argus specific
+*.json.bak
+scan-results.json
+results.csv
+*.log
+argus_report_*.html
+reports/
+data/
+.env
+credentials.json  # Custom credentials file (sensitive)
+
+# Development/Archive folders
+MoveMe_Cred/
+
+# OS
+.DS_Store
+Thumbs.db
+

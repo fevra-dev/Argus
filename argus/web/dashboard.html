@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Argus</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* 
+         * Argus Dashboard
+         * Design Philosophy: Dieter Rams' Principles
+         * - Less, but better
+         * - Unobtrusive and honest
+         * - Thorough down to the last detail
+         * - Long-lasting (timeless aesthetics)
+         */
+        
+        :root {
+            /* Minimal, functional color palette */
+            --bg: #fafafa;
+            --surface: #ffffff;
+            --text: #1a1a1a;
+            --text-muted: #6b6b6b;
+            --border: #e5e5e5;
+            --accent: #0066cc;
+            --critical: #d63031;
+            --warning: #e17055;
+            --success: #00a86b;
+            --radius: 2px;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d0d0d;
+                --surface: #1a1a1a;
+                --text: #fafafa;
+                --text-muted: #8a8a8a;
+                --border: #2a2a2a;
+            }
+        }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Layout: 8px grid system */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+        
+        /* Header: Minimal, functional */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+        
+        .logo {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo span {
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 8px;
+        }
+        
+        .logo-tagline {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+        
+        .status-dot.offline { background: var(--critical); }
+        
+        /* Stats: Data-forward, no decoration */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        
+        .stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+        
+        .stat-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 28px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .stat-value.critical { color: var(--critical); }
+        .stat-value.warning { color: var(--warning); }
+        .stat-value.success { color: var(--success); }
+        
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        
+        /* Section: Clear hierarchy */
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 24px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-body {
+            padding: 16px;
+        }
+        
+        /* Form: Functional, no decoration */
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        /* Button: Honest, clear affordance */
+        .btn {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        
+        .btn:hover { opacity: 0.85; }
+        
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        
+        /* Table: Maximum data, minimum ink */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 11px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border);
+            font-family: 'IBM Plex Mono', monospace;
+        }
+        
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background: var(--bg); }
+        
+        /* Badge: Minimal, functional */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: var(--radius);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        
+        .badge-running { background: rgba(0,102,204,0.1); color: var(--accent); }
+        .badge-complete { background: rgba(0,168,107,0.1); color: var(--success); }
+        .badge-failed { background: rgba(214,48,49,0.1); color: var(--critical); }
+        
+        /* Progress: Simple, honest */
+        .progress {
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+        
+        /* Charts: Clean, data-focused */
+        .charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .chart-container {
+            height: 200px;
+        }
+        
+        /* Empty state */
+        .empty {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+        
+        /* Utility */
+        .mono { font-family: 'IBM Plex Mono', monospace; }
+        .muted { color: var(--text-muted); }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .form-row { grid-template-columns: 1fr; }
+            .charts { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <div class="logo">Argus<span>0.2.0</span></div>
+                <div class="logo-tagline">The All-Seeing Eye</div>
+            </div>
+            <div class="status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Connecting...</span>
+            </div>
+        </header>
+        
+        <div class="stats" id="stats">
+            <div class="stat">
+                <div class="stat-value" id="totalScans">—</div>
+                <div class="stat-label">Total Scans</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="activeScans">—</div>
+                <div class="stat-label">Running</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value critical" id="criticalCount">—</div>
+                <div class="stat-label">Critical</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="findingsCount">—</div>
+                <div class="stat-label">Findings</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">New Scan</div>
+            </div>
+            <div class="section-body">
+                <form id="scanForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Targets</label>
+                            <input type="text" id="targets" placeholder="192.168.1.0/24, 10.0.0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Ports</label>
+                            <input type="text" id="ports" value="22,80,443,3306,6379" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Threads</label>
+                            <input type="number" id="threads" value="10" min="1" max="50">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Scan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-header">
+                <div class="section-title">Recent Scans</div>
+                <button class="btn btn-secondary" onclick="loadScans()">Refresh</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Targets</th>
+                        <th>Findings</th>
+                        <th>Critical</th>
+                        <th>Started</th>
+                    </tr>
+                </thead>
+                <tbody id="scansTable">
+                    <tr><td colspan="7" class="empty">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="charts">
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Scan History</div>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="historyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-title">Severity Distribution</div>
+                </div>
+                <div class="section-body">
+                    <div class="chart-container">
+                        <canvas id="severityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API = 'http://localhost:8000';
+        let historyChart, severityChart;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            loadStats();
+            loadScans();
+            setInterval(() => { loadStats(); loadScans(); }, 5000);
+        });
+        
+        document.getElementById('scanForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                targets: document.getElementById('targets').value.split(',').map(t => t.trim()),
+                ports: document.getElementById('ports').value.split(',').map(p => parseInt(p)),
+                threads: parseInt(document.getElementById('threads').value)
+            };
+            
+            try {
+                const r = await fetch(`${API}/api/scans`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (r.ok) {
+                    document.getElementById('targets').value = '';
+                    loadScans();
+                }
+            } catch (e) { console.error(e); }
+        });
+        
+        async function loadStats() {
+            try {
+                const r = await fetch(`${API}/api/stats`);
+                if (r.ok) {
+                    const d = await r.json();
+                    document.getElementById('totalScans').textContent = d.scans.total;
+                    document.getElementById('activeScans').textContent = d.scans.running;
+                    document.getElementById('criticalCount').textContent = d.findings.critical;
+                    document.getElementById('findingsCount').textContent = d.findings.total;
+                    updateStatus(true);
+                    updateCharts(d);
+                }
+            } catch (e) { updateStatus(false); }
+        }
+        
+        async function loadScans() {
+            try {
+                const r = await fetch(`${API}/api/scans?limit=10`);
+                if (r.ok) {
+                    const d = await r.json();
+                    renderScans(d.scans);
+                }
+            } catch (e) { console.error(e); }
+        }
+        
+        function renderScans(scans) {
+            const tbody = document.getElementById('scansTable');
+            if (!scans.length) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty">No scans yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = scans.map(s => `
+                <tr>
+                    <td>${s.scan_id.slice(0,8)}</td>
+                    <td><span class="badge badge-${s.status}">${s.status}</span></td>
+                    <td><div class="progress"><div class="progress-bar" style="width:${s.progress}%"></div></div></td>
+                    <td>${s.targets_count}</td>
+                    <td>${s.findings_count}</td>
+                    <td class="${s.critical_count > 0 ? 'critical' : ''}">${s.critical_count}</td>
+                    <td class="muted">${new Date(s.started_at).toLocaleTimeString()}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function updateStatus(connected) {
+            document.getElementById('statusDot').className = `status-dot ${connected ? '' : 'offline'}`;
+            document.getElementById('statusText').textContent = connected ? 'Connected' : 'Offline';
+        }
+        
+        function initCharts() {
+            const opts = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            };
+            
+            historyChart = new Chart(document.getElementById('historyChart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Completed', 'Running', 'Failed'],
+                    datasets: [{ data: [0,0,0], backgroundColor: ['#00a86b','#0066cc','#d63031'], borderWidth: 0 }]
+                },
+                options: {
+                    ...opts,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#6b6b6b', font: { size: 11 } } },
+                        y: { beginAtZero: true, grid: { color: '#e5e5e5' }, ticks: { color: '#6b6b6b' } }
+                    }
+                }
+            });
+            
+            severityChart = new Chart(document.getElementById('severityChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{ data: [0,0,0,0], backgroundColor: ['#d63031','#e17055','#fdcb6e','#00a86b'], borderWidth: 0 }]
+                },
+                options: opts
+            });
+        }
+        
+        function updateCharts(d) {
+            if (historyChart) {
+                historyChart.data.datasets[0].data = [d.scans.completed, d.scans.running, d.scans.failed];
+                historyChart.update();
+            }
+            if (severityChart) {
+                severityChart.data.datasets[0].data = [d.findings.critical, d.findings.high || 0, 0, 0];
+                severityChart.update();
+            }
+        }
+    </script>
+</body>
+</html>
