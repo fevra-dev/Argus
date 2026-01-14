@@ -1,7 +1,7 @@
 # 👁️ Argus - The All-Seeing Eye
 
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![Version](https://img.shields.io/badge/version-0.2.1-green.svg)](https://github.com/fevra-dev/Argus/releases)
+[![Version](https://img.shields.io/badge/version-0.3.0-green.svg)](https://github.com/fevra-dev/Argus/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Security](https://img.shields.io/badge/security-tool-orange.svg)](SECURITY.md)
 [![MITRE ATT&CK](https://img.shields.io/badge/MITRE-T1078.001-red.svg)](https://attack.mitre.org/techniques/T1078/001/)
@@ -353,4 +353,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ---
 
-*Argus v0.2.1 - The All-Seeing Eye • For authorized security testing only*
+*Argus v0.3.0 - The All-Seeing Eye • For authorized security testing only*

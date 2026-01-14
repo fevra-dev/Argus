@@ -1,5 +1,5 @@
 """
-Argus 0.2.1 - Enhanced CLI with Rich Terminal UI.
+Argus 0.3.0 - Enhanced CLI with Rich Terminal UI.
 
 Professional command-line interface with:
 - Beautiful Rich terminal output

@@ -1,4 +1,4 @@
-# Argus 0.2.1 Docker Compose
+# Argus 0.3.0 Docker Compose
 # Full-stack deployment with monitoring and database
 
 version: '3.8'
@@ -9,7 +9,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: argus:0.2.1
+    image: argus:0.3.0
     container_name: argus-api
     restart: unless-stopped
     ports:

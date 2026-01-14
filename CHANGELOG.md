@@ -5,6 +5,49 @@ All notable changes to Argus will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-01-14
+
+### Added
+
+- **5 New Protocol Plugins** (14 total protocols now supported!)
+
+  - **VNC Plugin** (ports 5900-5903)
+    - RFB protocol implementation
+    - DES challenge-response authentication
+    - Detects no-auth configurations (critical finding)
+    - 16 common VNC passwords
+    
+  - **Elasticsearch Plugin** (ports 9200, 9300)
+    - Detects unauthenticated cluster access
+    - X-Pack Security credential testing
+    - Cluster info and index enumeration
+    - 15 default credential pairs
+    
+  - **RDP Plugin** (port 3389)
+    - X.224/RDP negotiation detection
+    - NLA (Network Level Authentication) status check
+    - Security configuration analysis
+    - 18 Windows default credentials
+    
+  - **WinRM Plugin** (ports 5985, 5986)
+    - HTTP Basic authentication testing
+    - NTLM/Negotiate detection
+    - WS-Management protocol support
+    - 17 Windows/automation account defaults
+    
+  - **Memcached Plugin** (port 11211)
+    - No-auth access detection
+    - Server statistics retrieval
+    - Key enumeration capability
+    - DDoS amplification risk detection
+
+### Changed
+
+- Plugin registry now supports 14 protocols across 25+ ports
+- Updated port auto-detection for all new services
+
+---
+
 ## [0.2.1] - 2026-01-14
 
 ### Added
@@ -105,6 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+[0.3.0]: https://github.com/fevra-dev/Argus/releases/tag/v0.3.0
 [0.2.1]: https://github.com/fevra-dev/Argus/releases/tag/v0.2.1
 [0.2.0]: https://github.com/fevra-dev/Argus/releases/tag/v0.2.0
 [0.1.0]: https://github.com/fevra-dev/Argus/releases/tag/v0.1.0

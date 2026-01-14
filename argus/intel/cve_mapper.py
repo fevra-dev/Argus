@@ -80,7 +80,7 @@ class CVEMapper:
         self.last_request = 0
         self.session = requests.Session()
         self.session.headers.update({
-            'User-Agent': 'Argus/0.2.1 Security Scanner'
+            'User-Agent': 'Argus/0.3.0 Security Scanner'
         })
         
         if api_key:

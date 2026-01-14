@@ -44,7 +44,7 @@ detection with real-time CVE intelligence enrichment.
 ### MITRE ATT&CK Mapping
 - **T1078.001**: Valid Accounts - Default Accounts
     """,
-    version="0.2.1",
+    version="0.3.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
     openapi_url="/api/openapi.json"
@@ -283,7 +283,7 @@ async def health_check():
     
     return HealthResponse(
         status="healthy",
-        version="0.2.1",
+        version="0.3.0",
         uptime_seconds=uptime,
         active_scans=active,
         total_scans=len(scans_db)

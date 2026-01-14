@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir --user -r requirements.txt
 FROM python:3.11-slim-bookworm AS production
 
 LABEL maintainer="Argus Security Team"
-LABEL version="0.2.1"
+LABEL version="0.3.0"
 LABEL description="Argus - The All-Seeing Eye - Enterprise security scanner with intelligence"
 
 # Security: Run as non-root user
