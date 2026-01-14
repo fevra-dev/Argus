@@ -1,4 +1,4 @@
-# CredScan CI/CD Security Pipeline
+# Argus CI/CD Security Pipeline
 # Automated credential scanning for enterprise environments
 #
 # Features:
@@ -8,7 +8,7 @@
 # - Slack/Teams notifications
 # - HTML report artifacts
 
-name: CredScan Security Scan
+name: Argus Security Scan
 
 on:
   # Scheduled scans (daily at 2 AM UTC)
@@ -25,7 +25,7 @@ on:
       ports:
         description: 'Ports to scan'
         required: false
-        default: '22,23,21,80,443,3306,27017,6379'
+        default: '22,23,21,80,443,3306,5432,27017,6379'
         type: string
       enrich_cves:
         description: 'Enable CVE enrichment'
@@ -46,13 +46,50 @@ on:
       - 'terraform/**'
       - 'ansible/**'
 
+  # Run tests on PR
+  pull_request:
+    branches: [main]
+
 env:
   PYTHON_VERSION: '3.11'
 
 jobs:
+  # Test job - runs on all PRs and pushes
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e .
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run tests
+        run: |
+          pytest tests/ -v --cov=argus --cov-report=xml
+
+      - name: Verify imports
+        run: |
+          python -c "from argus import __version__, ArgusScanner; print(f'Argus v{__version__}')"
+
+  # Scan job - runs on schedule or manual trigger
   scan:
     name: Credential Security Scan
     runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     permissions:
       contents: read
       security-events: write
@@ -67,30 +104,36 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
 
-      - name: Install CredScan
+      - name: Install Argus
         run: |
           pip install --upgrade pip
           pip install -e .
           pip install -r requirements.txt
 
-      - name: Run CredScan
+      - name: Run Argus Scan
         id: scan
         env:
           TARGETS: ${{ github.event.inputs.targets || secrets.SCAN_TARGETS }}
-          PORTS: ${{ github.event.inputs.ports || '22,23,21,80,443,3306,6379' }}
+          PORTS: ${{ github.event.inputs.ports || '22,23,21,80,443,3306,5432,6379' }}
           ENRICH_CVES: ${{ github.event.inputs.enrich_cves || 'true' }}
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
           # Create output directory
           mkdir -p reports
           
           # Run scan with intelligence enrichment
-          credscan scan "$TARGETS" \
+          argus "$TARGETS" \
             --ports "$PORTS" \
             $([[ "$ENRICH_CVES" == "true" ]] && echo "--enrich-cves --check-exploits") \
-            --output reports/scan-report.html \
-            --json reports/scan-results.json \
+            -o html --out-file reports/scan-report.html \
             --threads 20 \
-            2>&1 | tee scan-output.log
+            2>&1 | tee scan-output.log || true
+          
+          # Generate JSON output
+          argus "$TARGETS" \
+            --ports "$PORTS" \
+            -o json --out-file reports/scan-results.json \
+            --no-ui 2>/dev/null || true
           
           # Extract metrics for summary
           FINDINGS=$(cat reports/scan-results.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(len(d.get('findings', [])))" 2>/dev/null || echo "0")
@@ -109,7 +152,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: credscan-report-${{ github.run_number }}
+          name: argus-report-${{ github.run_number }}
           path: reports/
           retention-days: 30
 
@@ -134,7 +177,7 @@ jobs:
                     "type": "header",
                     "text": {
                       "type": "plain_text",
-                      "text": "🛡️ CredScan Security Report"
+                      "text": "👁️ Argus Security Report"
                     }
                   },
                   {
@@ -164,5 +207,5 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           ms-teams-webhook-uri: ${{ secrets.TEAMS_WEBHOOK }}
-          notification-summary: "CredScan completed - ${{ needs.scan.outputs.findings }} findings"
+          notification-summary: "Argus completed - ${{ needs.scan.outputs.findings }} findings"
           notification-color: ${{ needs.scan.result == 'success' && '00FF00' || 'FF0000' }}

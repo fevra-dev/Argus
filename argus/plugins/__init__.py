@@ -2,8 +2,8 @@
 Plugin registry for Argus.
 
 Provides protocol-specific credential testing plugins for:
-- SSH, FTP, Telnet, HTTP/HTTPS (original)
-- Redis, MongoDB, MySQL, SNMP (extended)
+- SSH, FTP, Telnet, HTTP/HTTPS (core)
+- Redis, MongoDB, MySQL, PostgreSQL, SNMP (extended)
 """
 
 from .ssh import SSHPlugin
@@ -13,20 +13,25 @@ from .telnet import TelnetPlugin
 from .redis import RedisPlugin
 from .mongodb import MongoDBPlugin
 from .mysql import MySQLPlugin
+from .postgresql import PostgreSQLPlugin
 from .snmp import SNMPPlugin
 
 PLUGINS = {
-    # Original protocols
+    # Core protocols
     'ssh': SSHPlugin,
     'http': HTTPPlugin,
     'https': HTTPPlugin,
     'ftp': FTPPlugin,
     'telnet': TelnetPlugin,
     
-    # Extended protocols (2.0)
+    # Database protocols
     'redis': RedisPlugin,
     'mongodb': MongoDBPlugin,
     'mysql': MySQLPlugin,
+    'postgresql': PostgreSQLPlugin,
+    'postgres': PostgreSQLPlugin,  # Alias
+    
+    # Network protocols
     'snmp': SNMPPlugin,
 }
 
@@ -43,6 +48,7 @@ PORT_PLUGINS = {
     27017: MongoDBPlugin,
     27018: MongoDBPlugin,
     3306: MySQLPlugin,
+    5432: PostgreSQLPlugin,
     161: SNMPPlugin,
 }
 
@@ -65,6 +71,7 @@ __all__ = [
     'RedisPlugin',
     'MongoDBPlugin',
     'MySQLPlugin',
+    'PostgreSQLPlugin',
     'SNMPPlugin',
     'get_plugin',
     'get_plugin_by_port',

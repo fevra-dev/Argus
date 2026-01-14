@@ -5,6 +5,20 @@ All notable changes to Argus will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-01-14
+
+### Added
+
+- **PostgreSQL Plugin** - Full PostgreSQL authentication testing with MD5 and cleartext password support
+- **GitHub Actions CI/CD** - Automated testing and security scanning workflow
+
+### Changed
+
+- Renamed workflow file from `credscan.yml` to `argus.yml`
+- Updated default port list to include PostgreSQL (5432)
+
+---
+
 ## [0.2.0] - 2026-01-14
 
 ### Added
@@ -23,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Redis authentication testing
   - MongoDB authentication testing
   - MySQL authentication testing
+  - PostgreSQL authentication testing
   - SNMP community string testing
 
 - **Enterprise Features**
@@ -75,7 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [0.3.0] - Planned
 
-- [ ] PostgreSQL plugin
 - [ ] LDAP/Active Directory plugin
 - [ ] SMB/CIFS plugin
 - [ ] Async credential testing improvements
@@ -88,9 +102,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ ] Comprehensive documentation
 - [ ] PyPI publication
 - [ ] Docker Hub images
-- [ ] GitHub Actions CI/CD
 
 ---
 
+[0.2.1]: https://github.com/fevra-dev/Argus/releases/tag/v0.2.1
 [0.2.0]: https://github.com/fevra-dev/Argus/releases/tag/v0.2.0
 [0.1.0]: https://github.com/fevra-dev/Argus/releases/tag/v0.1.0

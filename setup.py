@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="argus",
-    version="0.2.0",
+    version="0.2.1",
     description="Argus - Intelligence-Driven Security Scanner (The All-Seeing Eye)",
     author="Fevra",
     author_email="fev.dev@proton.me",

@@ -33,7 +33,7 @@ Author: Security Team
 License: MIT
 """
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 __author__ = "Fevra"
 __email__ = "fev.dev@proton.me"
 
