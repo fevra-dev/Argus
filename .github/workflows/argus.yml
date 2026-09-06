@@ -48,7 +48,6 @@ on:
 
   # Run tests on PR
   pull_request:
-    branches: [main]
 
 env:
   PYTHON_VERSION: '3.11'
